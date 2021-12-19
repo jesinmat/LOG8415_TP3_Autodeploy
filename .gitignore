@@ -2,3 +2,4 @@ credentials
 *.pyc
 test.py
 secrets.sh
+tmp/
