@@ -1,5 +1,6 @@
 import logging
 import boto3
+import time
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -7,13 +8,34 @@ logger.setLevel(logging.INFO)
 client = boto3.client('lambda')
 clientec2 = boto3.client('ec2')
 
+DEPLOYMENT_SCRIPT="""\
+#!/bin/bash
+git clone https://github.com/jesinmat/LOG8415_simple_aws_app.git app
+cd app
+./setup.sh &
+"""
+
 def lambda_handler(event, context):
     tags = [
-        { 'Key': 'Name', 'Value': 'Hello-world2' },
+        { 'Key': 'Name', 'Value': 'Automatic-instance' },
+        { 'Key': 'Commit', 'Value': 'abcdh1' },
+        { 'Key': 'Time', 'Value': str(int(time.time()))  },
     ]
-    response = create(imageId='ami-09e67e426f25ce0d7', keypair='matyas-aws', securityGroup='sg-01bb68fc8f253a182', tags=tags)
-    logger.info('Created {0} instances.'.format(len(response['Instances'])))
-    return "Started {0} instances.".format(len(response['Instances']))
+    response = create(imageId='ami-09e67e426f25ce0d7',
+                        keypair='matyas-aws',
+                        securityGroup='sg-01bb68fc8f253a182',
+                        tags=tags,
+                        userScript=DEPLOYMENT_SCRIPT
+                        )
+    numInstances = len(response['Instances'])
+    logger.info('Created {0} instances.'.format(numInstances))
+    return {
+        "isBase64Encoded": False,
+        "statusCode": 200,
+        "headers": { "Content-Type": "text/plain" },
+        "multiValueHeaders": { },
+        "body": 'Created {0} instances.'.format(numInstances)
+    }
 
 
 def create(

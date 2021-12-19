@@ -1,14 +1,27 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: 'AWS::Serverless-2016-10-31'
-Description: An AWS Lambda application that calls the Lambda API.
+Description: An AWS Lambda application for automatic blue/green deployment from GitHub.
 Resources:
-  function:
+  deploy:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: lambda_function.lambda_handler
+      Handler: lambda_deploy.lambda_handler
       Runtime: python3.8
-      CodeUri: function/.
+      CodeUri: function/lambda_deploy.py
       Description: Deploys new EC2 instances.
+      Timeout: 10
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - AWSLambda_ReadOnlyAccess
+        - AmazonEC2FullAccess
+      Tracing: Active
+  terminate:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: lambda_terminate.lambda_handler
+      Runtime: python3.8
+      CodeUri: function/lambda_terminate.py
+      Description: Terminates old EC2 instances.
       Timeout: 10
       Policies:
         - AWSLambdaBasicExecutionRole

@@ -5,7 +5,8 @@ if [[ $# -eq 1 ]] ; then
     STACK=$1
     echo "Deleting stack $STACK"
 fi
-FUNCTION=$(aws cloudformation describe-stack-resource --stack-name $STACK --logical-resource-id 'function' --query 'StackResourceDetail.PhysicalResourceId' --output text)
+DEPLOY=$(aws cloudformation describe-stack-resource --stack-name $STACK --logical-resource-id 'deploy' --query 'StackResourceDetail.PhysicalResourceId' --output text)
+TERMINATE=$(aws cloudformation describe-stack-resource --stack-name $STACK --logical-resource-id 'terminate' --query 'StackResourceDetail.PhysicalResourceId' --output text)
 aws cloudformation delete-stack --stack-name $STACK
 echo "Deleted $STACK stack."
 
@@ -21,7 +22,8 @@ if [ -f bucket-name.txt ]; then
 fi
 
 echo "Deleting logs..."
-aws logs delete-log-group --log-group-name /aws/lambda/$FUNCTION
+aws logs delete-log-group --log-group-name /aws/lambda/$DEPLOY || echo "This usually means there were no logs."
+aws logs delete-log-group --log-group-name /aws/lambda/$TERMINATE || echo "This usually means there were no logs."
 
 
 rm -f out.yml function/*.pyc
