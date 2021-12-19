@@ -12,6 +12,7 @@ LB_CMD=$(echo aws elbv2 create-load-balancer --name my-load-balancer --subnets $
 LOADBALANCER=$(eval "$LB_CMD")
 VPC_ID=$(echo $LOADBALANCER | jq -r '.LoadBalancers[0].VpcId')
 LB_ARN=$(echo $LOADBALANCER | jq -r '.LoadBalancers[0].LoadBalancerArn')
+LB_URL=$(echo $LOADBALANCER | jq -r '.LoadBalancers[0].DNSName')
 
 echo "Creating target groups for instances..."
 TGROUP=$(aws elbv2 create-target-group --name "automated-instances" --protocol HTTP --port 80 --vpc-id "$VPC_ID")
@@ -25,7 +26,9 @@ LISTENER_ARN=$(echo "$LISTENER" | jq -r '.Listeners[0].ListenerArn')
 
 mkdir -p ../tmp
 echo "$LB_ARN" > ../tmp/lb-arn.txt
+echo "$LB_URL" > ../tmp/lb-url.txt
 echo "$TG_ARN" > ../tmp/instance-tg-arn.txt
 echo "$LISTENER_ARN" > ../tmp/listener-arn.txt
+echo "$SG_ID" > ../tmp/sg-id.txt
 
-echo "LoadBalancer is ready"
+echo "LoadBalancer configured."

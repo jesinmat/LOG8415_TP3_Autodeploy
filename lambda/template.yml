@@ -14,6 +14,7 @@ Resources:
         - AWSLambdaBasicExecutionRole
         - AWSLambda_ReadOnlyAccess
         - AmazonEC2FullAccess
+        - AmazonSQSFullAccess
       Tracing: Active
   terminate:
     Type: AWS::Serverless::Function
@@ -28,3 +29,29 @@ Resources:
         - AWSLambda_ReadOnlyAccess
         - AmazonEC2FullAccess
       Tracing: Active
+  targetgroup:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: lambda_targetgroup.lambda_handler
+      Runtime: python3.8
+      CodeUri: function/lambda_targetgroup.py
+      Description: Add EC2 instances to target groups.
+      Timeout: 10
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - AWSLambda_ReadOnlyAccess
+        - AmazonEC2FullAccess
+      Tracing: Active
+      Events:
+        MySQSEvent:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt instancesQueue.Arn
+  instancesQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      ContentBasedDeduplication: true
+      DeduplicationScope: queue
+      DelaySeconds: 60
+      FifoQueue: true
+      QueueName: instances-queue.fifo

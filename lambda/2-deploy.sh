@@ -24,6 +24,7 @@ aws lambda update-function-configuration --function-name "$TERMINATE_NAME" --env
 
 TG_TERMINATE=$(aws elbv2 create-target-group --name lambda-delete --target-type lambda)
 TG_TERMINATE_ARN=$(echo "$TG_TERMINATE" | jq -r '.TargetGroups[0].TargetGroupArn')
+echo "$TG_TERMINATE_ARN" > ../tmp/lambda-terminate-tg-arn.txt
 
 aws lambda add-permission \
     --function-name "$TERMINATE_NAME" \
