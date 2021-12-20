@@ -7,9 +7,11 @@ cd loadbalancer
 cd ../lambda
 ./3-cleanup.sh
 
+sleep 50
 cd ../loadbalancer
 ./cleanup-2.sh
 
-#rm -r tmp/
+cd ..
+rm -r tmp/
 
 echo "Cleanup done!"

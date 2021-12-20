@@ -11,6 +11,7 @@ logger.setLevel(logging.INFO)
 
 client = boto3.client('lambda')
 clientec2 = boto3.client('ec2')
+sqs = boto3.resource('sqs')
 
 DEPLOYMENT_SCRIPT="""\
 #!/bin/bash
@@ -44,6 +45,29 @@ def response(code, text):
             "body": text
         }
 
+def add_to_target_group(instances):
+    queue = sqs.get_queue_by_name(QueueName='instances-queue.fifo')
+    for instance in instances:
+        queue.send_message(MessageBody=instance['InstanceId'], MessageGroupId='ec2-instances')
+
+
+def deploy(commit):
+    tags = [
+        { 'Key': 'Name', 'Value': 'Automatic-instance' },
+        { 'Key': 'Commit', 'Value': commit },
+        { 'Key': 'Time', 'Value': str(int(time.time()))  },
+    ]
+    deployResponse = create(imageId='ami-09e67e426f25ce0d7',
+                        keypair=os.environ['KEYPAIR'],
+                        securityGroup=os.environ['SECGROUP_ID'],
+                        tags=tags,
+                        userScript=DEPLOYMENT_SCRIPT,
+                        nbInstances=2
+                        )
+    logger.info(deployResponse)
+    add_to_target_group(deployResponse['Instances'])
+    return len(deployResponse['Instances'])
+
 def lambda_handler(event, context):
     if not verify_source(event):
         logger.info("Invalid request")
@@ -51,20 +75,9 @@ def lambda_handler(event, context):
     body = json.loads(event['body'])
     branch = body['ref'].split("/")[-1]
     if branch != 'main':
-        return response(405, 'Deploying not allowed, not on main')
+        return response(405, 'Deploying not allowed: Not on main branch')
     
-    tags = [
-        { 'Key': 'Name', 'Value': 'Automatic-instance' },
-        { 'Key': 'Commit', 'Value': body['after'][:8] },
-        { 'Key': 'Time', 'Value': str(int(time.time()))  },
-    ]
-    deployResponse = create(imageId='ami-09e67e426f25ce0d7',
-                        keypair='matyas-aws',
-                        securityGroup='sg-01bb68fc8f253a182',
-                        tags=tags,
-                        userScript=DEPLOYMENT_SCRIPT
-                        )
-    numInstances = len(deployResponse['Instances'])
+    numInstances = deploy(body['after'][:8]) 
     logger.info('Created {0} instances.'.format(numInstances))
     return response(200, 'Created {0} instances.'.format(numInstances))
 

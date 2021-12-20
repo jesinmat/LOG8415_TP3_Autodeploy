@@ -3,3 +3,5 @@ credentials
 test.py
 secrets.sh
 tmp/
+lambda/bucket-name.txt
+lambda/out.yml

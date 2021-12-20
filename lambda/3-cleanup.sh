@@ -1,6 +1,6 @@
 #!/bin/bash
 set -eo pipefail
-STACK=python-deploy-ec2
+STACK=tp3
 if [[ $# -eq 1 ]] ; then
     STACK=$1
     echo "Deleting stack $STACK"
@@ -23,9 +23,9 @@ if [ -f bucket-name.txt ]; then
 fi
 
 echo "Deleting logs..."
-aws logs delete-log-group --log-group-name /aws/lambda/$DEPLOY || echo "This usually means there were no logs."
-aws logs delete-log-group --log-group-name /aws/lambda/$TERMINATE || echo "This usually means there were no logs."
-aws logs delete-log-group --log-group-name /aws/lambda/$TG_LAMBDA || echo "This usually means there were no logs."
+aws logs delete-log-group --log-group-name /aws/lambda/$DEPLOY > /dev/null 2>&1 || true
+aws logs delete-log-group --log-group-name /aws/lambda/$TERMINATE > /dev/null 2>&1 || true
+aws logs delete-log-group --log-group-name /aws/lambda/$TG_LAMBDA > /dev/null 2>&1 || true
 
 echo "Deleting running instances..."
 INST=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=Automatic-instance" --query 'Reservations[*].Instances[*].InstanceId')
@@ -39,6 +39,9 @@ fi
 echo "Deleting lambda target groups..."
 read TG_TERMINATE_ARN < ../tmp/lambda-terminate-tg-arn.txt
 aws elbv2 delete-target-group --target-group-arn $TG_TERMINATE_ARN
+
+read TG_DEPLOY_ARN < ../tmp/lambda-deploy-tg-arn.txt
+aws elbv2 delete-target-group --target-group-arn $TG_DEPLOY_ARN
 
 rm -f out.yml
 rm -rf package function/__pycache__

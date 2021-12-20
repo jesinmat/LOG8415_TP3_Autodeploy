@@ -19,5 +19,13 @@ while true; do
     sleep 10
 done
 
+echo "Calling lambda to deploy initial instances..."
+python3 call-deploy-lambda.py
+echo "Instances queued for deployment. They will be ready in approximately 60 seconds."
+
 read LB_URL < tmp/lb-url.txt
-echo "Access loadbalancer at http://$LB_URL"
+echo "##########################################"
+echo ""
+echo "Access application at http://$LB_URL"
+echo "Create a GitHub webhook with the following url: http://${LB_URL}/lambda/deploy and publish a change to the repository" 
+echo "To delete oldest running instances, visit: http://${LB_URL}/lambda/delete" 

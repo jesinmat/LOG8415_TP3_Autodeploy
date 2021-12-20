@@ -38,14 +38,15 @@ def deleteOldest():
     response = clientec2.describe_instances(Filters=name_filter)
     instances = get_instances(response)
     tags = [instance["Tags"] for instance in instances]
-    times = []
+    times = ()
     for instanceTags in tags:
         time = [kvp['Value'] for kvp in instanceTags if kvp['Key'] == 'Time'][0]
-        times.append(int(time))
+        times.add(int(time))
 
     if len(times) <= 1:
         return "Cannot terminate more instances - no more instances would be running"
 
+    times = list(times)
     times.sort()
     lowestTime = str(times[0])
     time_filter = [{
