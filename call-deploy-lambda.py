@@ -17,4 +17,5 @@ body = json.dumps(body)
 expected_sign = HMAC(key=secret.encode(), msg=body.encode(), digestmod=sha256).hexdigest()
 headers = {'content-type': 'application/json', 'x-hub-signature-256': 'sha256='+expected_sign}
 
-requests.post(url, data=body, headers=headers)
+r = requests.post(url, data=body, headers=headers)
+print('Request accepted' if r.status_code == 200 else 'Request rejected')

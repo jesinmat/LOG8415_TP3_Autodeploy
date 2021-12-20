@@ -8,7 +8,7 @@ cd ../lambda
 ./3-cleanup.sh
 
 echo "Waiting for network interfaces..."
-sleep 120
+sleep 180
 cd ../loadbalancer
 ./cleanup-2.sh
 
