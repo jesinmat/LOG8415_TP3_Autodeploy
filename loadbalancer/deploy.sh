@@ -2,7 +2,7 @@
 
 # Create security group
 echo "Creating security group..."
-SEC_GROUP=$(aws ec2 create-security-group --group-name "HTTP" --description "HTTP only")
+SEC_GROUP=$(aws ec2 create-security-group --group-name "HTTP TP3" --description "Allow HTTP for TP3 project")
 SG_ID=$(echo $SEC_GROUP | jq -r '.GroupId')
 ADD_PORT=$(aws ec2 authorize-security-group-ingress --group-id "$SG_ID" --protocol tcp --port 80 --cidr 0.0.0.0/0)
 
@@ -21,8 +21,6 @@ TG_ARN=$(echo "$TGROUP" | jq -r '.TargetGroups[0].TargetGroupArn')
 echo "Creating listener..."
 LISTENER=$(aws elbv2 create-listener --load-balancer-arn "$LB_ARN" --protocol HTTP --port 80 --default-actions Type=forward,TargetGroupArn="$TG_ARN")
 LISTENER_ARN=$(echo "$LISTENER" | jq -r '.Listeners[0].ListenerArn')
-
-# Register targets - add instances from code https://docs.aws.amazon.com/elasticloadbalancing/latest/application/tutorial-application-load-balancer-cli.html
 
 mkdir -p ../tmp
 echo "$LB_ARN" > ../tmp/lb-arn.txt

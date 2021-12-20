@@ -15,10 +15,10 @@ sqs = boto3.resource('sqs')
 
 DEPLOYMENT_SCRIPT="""\
 #!/bin/bash
-git clone https://github.com/jesinmat/LOG8415_simple_aws_app.git app
+git clone #REPOSITORY_URL# app
 cd app
 ./setup.sh &
-"""
+""".replace("#REPOSITORY_URL#", os.environ['REPOSITORY_URL'])
 
 def verify_source(request):
     if not 'body' in request:
@@ -75,7 +75,7 @@ def lambda_handler(event, context):
     body = json.loads(event['body'])
     branch = body['ref'].split("/")[-1]
     if branch != 'main':
-        return response(405, 'Deploying not allowed: Not on main branch')
+        return response(400, 'Deploying not allowed: Not on main branch')
     
     numInstances = deploy(body['after'][:8]) 
     logger.info('Created {0} instances.'.format(numInstances))

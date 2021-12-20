@@ -38,7 +38,7 @@ def deleteOldest():
     response = clientec2.describe_instances(Filters=name_filter)
     instances = get_instances(response)
     tags = [instance["Tags"] for instance in instances]
-    times = ()
+    times = set()
     for instanceTags in tags:
         time = [kvp['Value'] for kvp in instanceTags if kvp['Key'] == 'Time'][0]
         times.add(int(time))
