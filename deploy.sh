@@ -20,6 +20,7 @@ while true; do
 done
 
 echo "Calling lambda to deploy initial instances..."
+sleep 10
 python3 call-deploy-lambda.py
 echo "Instances queued for deployment. They will be ready in approximately 60 seconds."
 
