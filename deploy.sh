@@ -28,7 +28,7 @@ read LB_URL < tmp/lb-url.txt
 echo "##########################################"
 echo ""
 echo "Access application at http://$LB_URL"
-echo "Create a GitHub webhook with the following settings, then publish a change to the repository>"
+echo "Create a GitHub webhook with the following settings, then publish a change to the repository:"
 echo -e "\tURL: http://${LB_URL}/lambda/deploy"
 echo -e "\tType: application/json" 
 echo -e "\tSecret: copy secret from lambda/secrets.sh" 
